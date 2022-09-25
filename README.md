@@ -8,6 +8,7 @@ DEEPL_KEY=api key
 ```
 
 ## Usage
+```
 Usage : translate [option] <text>
 
 Option :
@@ -20,3 +21,4 @@ Option :
 Example :
 translate -t FR "Hello World!"
 echo "Hello World!" | translate -t FR -
+```
