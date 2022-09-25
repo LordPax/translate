@@ -1,0 +1,1 @@
+{"translations":[{"detected_source_language":"FR","text":"hi everyone"}]}
