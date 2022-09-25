@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version="v0.1"
+version="v0.1.1"
 translateRoute="https://api-free.deepl.com/v2/translate"
 dotenv="$(dirname $(readlink -f $0))/.env"
 sourceLang=""
@@ -21,11 +21,10 @@ Option :
 -v or --version ........................ Show version
 -s <lang> .............................. Source language
 -t <lang> .............................. Target language
-- ...................................... Stdin
 
 Example :
-translate -t FR \"Hello World!\"
-echo \"Hello World!\" | translate -t FR -"
+translate -t fr \"Hello World!\"
+echo \"Hello World!\" | translate -t fr"
 
     exit 0
 }
@@ -92,8 +91,6 @@ if [ $# -ge 1 ]; then
             -t)
                 targetLang=$2
                 shift;;
-            -)
-                text=$(cat /dev/stdin);;
             "") ;;
             -*)
                 echo_err $"Unknown parameter \"$1\""
@@ -104,6 +101,7 @@ if [ $# -ge 1 ]; then
         esac
         shift
     done
+    [ "$text" == "" ] && text=$(cat /dev/stdin)
 fi
 
 readDotenv $dotenv
