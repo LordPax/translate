@@ -2,7 +2,7 @@
 
 version="v0.1"
 translateRoute="https://api-free.deepl.com/v2/translate"
-dotenv=".env"
+dotenv="$(dirname $(readlink -f $0))/.env"
 sourceLang=""
 targetLang=""
 text=""
@@ -32,14 +32,15 @@ echo \"Hello World!\" | translate -t FR -"
 
 function verification() {
     [ "$(which jq)" != "/usr/bin/jq" ] && echo_err "\"jq\" is required" && exit 1
-    [ "$DEEPL_KEY" == "" ] && echo_err "Deel api key is needed" && exit 1
+    [ "$DEEPL_KEY" == "" ] && echo_err "Deepl api key is needed" && exit 1
     [ "$text" == "" ] && echo_err "Text is needed" && exit 1
     [ "$targetLang" == "" ] && echo_err "Target language is needed" && exit 1
 }
 
 # readDotenv <env>
 function readDotenv() {
-    [ "$1" == "" ] && echo_err "Dotenv file not found" && exit 1
+    ([ "$1" == "" ] || [ ! -f $1 ]) \
+        && echo_err "Dotenv file not found" && exit 1
 
     local k
     local v
