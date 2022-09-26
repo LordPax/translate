@@ -14,7 +14,7 @@ function echo_err() {
 }
 
 function helpFunc() {
-    echo -e $"Usage : $0 [option] <text>
+    echo -e $"Usage : $0 <option> [text]
 
 Option :
 -h or --help ........................... Show help

@@ -3,13 +3,14 @@
 Translate text with deepl
 
 ## Dotenv
+Create a .env file
 ```
 DEEPL_KEY=api key
 ```
 
 ## Usage
 ```
-Usage : translate <option> [text]
+Usage : translate [option] <text>
 
 Option :
 -h or --help ........................... Show help
