@@ -22,7 +22,7 @@ function helpFunc() {
 Option :
 -h or --help ........................... Show help
 -v or --version ........................ Show version
--e or --engin <engin> .................. Set engin (default : deepl) (soon)
+-e or --engine <engine> ................ Set engine (default : deepl) (soon)
 -s <lang> .............................. Source language
 -t <lang> .............................. Target language
 
@@ -94,7 +94,7 @@ if [ $# -ge 1 ]; then
             --version | -v)
                 echo $version
                 exit 0;;
-            -e | --engin)
+            -e | --engine)
                 userdEngine=$2
                 shift;;
             -s)
