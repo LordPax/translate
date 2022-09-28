@@ -1,7 +1,11 @@
 #!/bin/bash
+# author : lordpax
+# backup v0.1.1
 
 version="v0.1.1"
 dotenv="$(dirname $(readlink -f $0))/.env"
+engins=(deepl google)
+usedEngin="deepl"
 sourceLang=""
 targetLang=""
 text=""
@@ -13,11 +17,12 @@ function echo_err() {
 }
 
 function helpFunc() {
-    echo -e $"Usage : $0 <option> [text]
+    echo -e $"Usage : $(basename $0) <option> [text]
 
 Option :
 -h or --help ........................... Show help
 -v or --version ........................ Show version
+-e or --engin <engin> .................. Set engin (default : deepl) (soon)
 -s <lang> .............................. Source language
 -t <lang> .............................. Target language
 
@@ -53,7 +58,7 @@ function readDotenv() {
     done < $1
 }
 
-function translate() {
+function translateDeepl() {
     local translated
 
     if [ "$sourceLang" == "" ]; then
@@ -77,6 +82,10 @@ function translate() {
     echo $translated | jq -r .translations[0].text
 }
 
+function translateGoogle() {
+    echo "google translate will be added soon"
+}
+
 if [ $# -ge 1 ]; then
     for i in $(seq 1 $#); do
         case $1 in
@@ -85,6 +94,9 @@ if [ $# -ge 1 ]; then
             --version | -v)
                 echo $version
                 exit 0;;
+            -e | --engin)
+                usedEngin=$2
+                shift;;
             -s)
                 sourceLang=$2
                 shift;;
@@ -106,4 +118,13 @@ fi
 
 readDotenv $dotenv
 verification
-translate
+
+case $usedEngin in
+    deepl)
+        translateDeepl;;
+    google)
+        translateGoogle;;
+    *)
+        echo_err "Engin \"$usedEngin\" not found"
+        exit 1;;
+esac
