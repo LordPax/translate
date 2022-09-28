@@ -4,8 +4,8 @@
 
 version="v0.1.1"
 dotenv="$(dirname $(readlink -f $0))/.env"
-engins=(deepl google)
-usedEngin="deepl"
+engines=(deepl google)
+userdEngine="deepl"
 sourceLang=""
 targetLang=""
 text=""
@@ -95,7 +95,7 @@ if [ $# -ge 1 ]; then
                 echo $version
                 exit 0;;
             -e | --engin)
-                usedEngin=$2
+                userdEngine=$2
                 shift;;
             -s)
                 sourceLang=$2
@@ -119,12 +119,12 @@ fi
 readDotenv $dotenv
 verification
 
-case $usedEngin in
+case $userdEngine in
     deepl)
         translateDeepl;;
     google)
         translateGoogle;;
     *)
-        echo_err "Engin \"$usedEngin\" not found"
+        echo_err "Engine \"$userdEngine\" not found"
         exit 1;;
 esac
