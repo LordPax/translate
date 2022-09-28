@@ -1,7 +1,6 @@
 #!/bin/bash
 
 version="v0.1.1"
-translateRoute="https://api-free.deepl.com/v2/translate"
 dotenv="$(dirname $(readlink -f $0))/.env"
 sourceLang=""
 targetLang=""
@@ -31,7 +30,8 @@ echo \"Hello World!\" | translate -t fr"
 
 function verification() {
     [ "$(which jq)" != "/usr/bin/jq" ] && echo_err "\"jq\" is required" && exit 1
-    [ "$DEEPL_KEY" == "" ] && echo_err "Deepl api key is needed" && exit 1
+    [ "$DEEPL_ROUTE" == "" ] && echo_err "Deepl route is not defined in dotenv" && exit 1
+    [ "$DEEPL_KEY" == "" ] && echo_err "Deepl api key is not defined in dotenv" && exit 1
     [ "$text" == "" ] && echo_err "Text is needed" && exit 1
     [ "$targetLang" == "" ] && echo_err "Target language is needed" && exit 1
 }
@@ -58,14 +58,14 @@ function translate() {
 
     if [ "$sourceLang" == "" ]; then
         translated=$(curl -s \
-            -X POST "$translateRoute" \
+            -X POST "$DEEPL_ROUTE" \
             -H "Authorization: DeepL-Auth-Key $DEEPL_KEY" \
             -d "text=$text" \
             -d "target_lang=$targetLang"
         )
     else
         translated=$(curl -s \
-            -X POST "$translateRoute" \
+            -X POST "$DEEPL_ROUTE" \
             -H "Authorization: DeepL-Auth-Key $DEEPL_KEY" \
             -d "text=$text" \
             -d "target_lang=$targetLang" \
