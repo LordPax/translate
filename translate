@@ -1,11 +1,10 @@
 #!/bin/bash
 # author : lordpax
-# backup v0.1.1
+# backup v0.2.0
 
-version="v0.1.1"
+version="v0.2.0"
 dotenv="$(dirname $(readlink -f $0))/.env"
-engines=(deepl google)
-userdEngine="deepl"
+usedEngine="deepl"
 sourceLang=""
 targetLang=""
 text=""
@@ -22,7 +21,7 @@ function helpFunc() {
 Option :
 -h or --help ........................... Show help
 -v or --version ........................ Show version
--e or --engine <engine> ................ Set engine (default : deepl) (soon)
+-e or --engine <engine> ................ Set engine (default : deepl)
 -s <lang> .............................. Source language
 -t <lang> .............................. Target language
 
@@ -36,7 +35,7 @@ echo \"Hello World!\" | translate -t fr"
 function verification() {
     [ "$(which jq)" != "/usr/bin/jq" ] && echo_err "\"jq\" is required" && exit 1
     [ "$DEEPL_ROUTE" == "" ] && echo_err "Deepl route is not defined in dotenv" && exit 1
-    [ "$DEEPL_KEY" == "" ] && echo_err "Deepl api key is not defined in dotenv" && exit 1
+    [ "$LIBRE_ROUTE" == "" ] && echo_err "Libre Translation route is not defined in dotenv" && exit 1
     [ "$text" == "" ] && echo_err "Text is needed" && exit 1
     [ "$targetLang" == "" ] && echo_err "Target language is needed" && exit 1
 }
@@ -59,6 +58,7 @@ function readDotenv() {
 }
 
 function translateDeepl() {
+    [ "$DEEPL_KEY" == "" ] && echo_err "Deepl api key is not defined in dotenv" && exit 1
     local translated
 
     if [ "$sourceLang" == "" ]; then
@@ -82,8 +82,36 @@ function translateDeepl() {
     echo $translated | jq -r .translations[0].text
 }
 
-function translateGoogle() {
-    echo "google translate will be added soon"
+function translateLibre() {
+    # if key is not found and the route is not on localhost, print error
+    ([ "$LIBRE_KEY" == "" ] && ! echo $LIBRE_ROUTE | grep "localhost" &> /dev/null) \
+        && echo_err "Libre Translate api key is not defined in dotenv" && exit 1
+
+    if [ "$sourceLang" == "" ]; then
+        local detected=$(curl -s \
+            -X POST "$LIBRE_ROUTE_DETECT" \
+            -H "accept: application/json" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "q=$text" \
+            -d "api_key=$LIBRE_KEY"
+        )
+        [ $? -ne 0 ] && echo_err "Something wrong with language detection" && exit 1
+        sourceLang=$(echo $detected | jq -r .[0].language)
+    fi
+
+    local translated=$(curl -s \
+        -X POST "$LIBRE_ROUTE" \
+        -H "Content-Type: application/json" \
+        -d "{\"q\":\"$text\",\"source\":\"$sourceLang\",\"target\":\"$targetLang\",\"api_key\":\"$LIBRE_KEY\"}"
+    )
+
+    [ $? -ne 0 ] && echo_err "Something wrong with translation" && exit 1
+    echo $translated | jq -r .translatedText
+}
+
+function translateEngine() {
+    # TODO : add other engine here
+    echo "example engine"
 }
 
 if [ $# -ge 1 ]; then
@@ -95,7 +123,7 @@ if [ $# -ge 1 ]; then
                 echo $version
                 exit 0;;
             -e | --engine)
-                userdEngine=$2
+                usedEngine=$2
                 shift;;
             -s)
                 sourceLang=$2
@@ -119,12 +147,14 @@ fi
 readDotenv $dotenv
 verification
 
-case $userdEngine in
+case $usedEngine in
     deepl)
         translateDeepl;;
-    google)
-        translateGoogle;;
+    libre)
+        translateLibre;;
+    exampleengine)
+        translateEngine;;
     *)
-        echo_err "Engine \"$userdEngine\" not found"
+        echo_err "Engine \"$usedEngine\" not found"
         exit 1;;
 esac
