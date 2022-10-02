@@ -61,22 +61,14 @@ function translateDeepl() {
     [ "$DEEPL_KEY" == "" ] && echo_err "Deepl api key is not defined in dotenv" && exit 1
     local translated
 
-    if [ "$sourceLang" == "" ]; then
-        translated=$(curl -s \
-            -X POST "$DEEPL_ROUTE" \
-            -H "Authorization: DeepL-Auth-Key $DEEPL_KEY" \
-            -d "text=$text" \
-            -d "target_lang=$targetLang"
-        )
-    else
-        translated=$(curl -s \
-            -X POST "$DEEPL_ROUTE" \
-            -H "Authorization: DeepL-Auth-Key $DEEPL_KEY" \
-            -d "text=$text" \
-            -d "target_lang=$targetLang" \
-            -d "source_lang=$sourceLang"
-        )
-    fi
+    # source language can be empty
+    translated=$(curl -s \
+        -X POST "$DEEPL_ROUTE" \
+        -H "Authorization: DeepL-Auth-Key $DEEPL_KEY" \
+        -d "text=$text" \
+        -d "target_lang=$targetLang" \
+        -d "source_lang=$sourceLang"
+    )
 
     [ $? -ne 0 ] && echo_err "Something wrong with translation" && exit 1
     echo $translated | jq -r .translations[0].text
@@ -117,9 +109,9 @@ function translateEngine() {
 if [ $# -ge 1 ]; then
     for i in $(seq 1 $#); do
         case $1 in
-            --help | -h)
+            -h | --help)
                 helpFunc;;
-            --version | -v)
+            -v | --version)
                 echo $version
                 exit 0;;
             -e | --engine)

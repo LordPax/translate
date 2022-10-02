@@ -2,6 +2,10 @@
 ## Description
 Translate text with deepl
 
+## Evailable engine
+* [deepl](https://www.deepl.com)
+* [libre](https://github.com/LibreTranslate/LibreTranslate)
+
 ## Dotenv
 Create a .env file
 ```
