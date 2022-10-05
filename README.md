@@ -27,6 +27,10 @@ Option :
 -s <lang> .............................. Source language
 -t <lang> .............................. Target language
 
+Engine :
+* deepl
+* libre
+
 Example :
 translate -t fr "Hello World!"
 echo "Hello World!" | translate -t fr
