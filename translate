@@ -75,7 +75,7 @@ function translateDeepl() {
     )
 
     [ $? -ne 0 ] && echo_err "Something wrong with translation" && exit 1
-    echo $translated | jq -r .translations[0].text
+    echo $translated | jq -r .translations[0].text | tr -d '\n'
 }
 
 function translateLibre() {
@@ -102,7 +102,7 @@ function translateLibre() {
     )
 
     [ $? -ne 0 ] && echo_err "Something wrong with translation" && exit 1
-    echo $translated | jq -r .translatedText
+    echo $translated | jq -r .translatedText | tr -d '\n'
 }
 
 function translateEngine() {
