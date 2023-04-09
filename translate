@@ -3,7 +3,9 @@
 # backup v0.2.0
 
 version="v0.2.0"
-dotenv="$(dirname $(readlink -f $0))/.env"
+config="${HOME}/.config/translate"
+dotenv="${config}/.env"
+logPath="${config}/log"
 usedEngine="deepl"
 sourceLang=""
 targetLang=""
@@ -13,6 +15,14 @@ text=""
 function echo_err() {
     [ "$1" == "" ] && exit 1
     echo -e "\e[31mERROR :\e[0m $1" > /dev/stderr
+}
+
+# echo_log <msg>
+# Log message for test purpose
+function echo_log() {
+    [ "$1" == "" ] && exit 1
+    local date=$(date "+%Y-%m-%d %H:%M:%S")
+    echo -e "[$date] : $1" >> "$logPath"
 }
 
 function helpFunc() {
@@ -37,11 +47,15 @@ echo \"Hello World!\" | translate -t fr"
 }
 
 function verification() {
-    [ "$(which jq)" != "/usr/bin/jq" ] && echo_err "\"jq\" is required" && exit 1
+    [ "$(which jq 2> /dev/null)" == "" ] && echo_err "\"jq\" is required" && exit 1
     [ "$DEEPL_ROUTE" == "" ] && echo_err "Deepl route is not defined in dotenv" && exit 1
     [ "$LIBRE_ROUTE" == "" ] && echo_err "Libre Translation route is not defined in dotenv" && exit 1
     [ "$text" == "" ] && echo_err "Text is needed" && exit 1
     [ "$targetLang" == "" ] && echo_err "Target language is needed" && exit 1
+}
+
+function initConfig() {
+    [ ! -d "$config" ] && mkdir "$config" && echo "Config are generated"
 }
 
 # readDotenv <env>
@@ -52,13 +66,13 @@ function readDotenv() {
     local k
     local v
 
-    while read var; do
-        if [ ! ${var:0:1} = "#" ]; then
+    while read -r var; do
+        if [ ! "${var:0:1}" = "#" ]; then
             k=${var%=*}
             v=${var#*=}
-            [ ! -z "$k" ] && export $k=$v
+            [ -n "$k" ] && export "$k"="$v"
         fi
-    done < $1
+    done < "$1"
 }
 
 function translateDeepl() {
@@ -75,12 +89,12 @@ function translateDeepl() {
     )
 
     [ $? -ne 0 ] && echo_err "Something wrong with translation" && exit 1
-    echo $translated | jq -r .translations[0].text | tr -d '\n'
+    echo "$translated" | jq -r .translations[0].text
 }
 
 function translateLibre() {
     # if key is not found and the route is not on localhost, print error
-    ([ "$LIBRE_KEY" == "" ] && ! echo $LIBRE_ROUTE | grep "localhost" &> /dev/null) \
+    ([ "$LIBRE_KEY" == "" ] && ! echo "$LIBRE_ROUTE" | grep "localhost" &> /dev/null) \
         && echo_err "Libre Translate api key is not defined in dotenv" && exit 1
 
     if [ "$sourceLang" == "" ]; then
@@ -92,7 +106,7 @@ function translateLibre() {
             -d "api_key=$LIBRE_KEY"
         )
         [ $? -ne 0 ] && echo_err "Something wrong with language detection" && exit 1
-        sourceLang=$(echo $detected | jq -r .[0].language)
+        sourceLang=$(echo "$detected" | jq -r .[0].language)
     fi
 
     local translated=$(curl -s \
@@ -102,7 +116,7 @@ function translateLibre() {
     )
 
     [ $? -ne 0 ] && echo_err "Something wrong with translation" && exit 1
-    echo $translated | jq -r .translatedText | tr -d '\n'
+    echo "$translated" | jq -r .translatedText
 }
 
 function translateEngine() {
@@ -140,7 +154,8 @@ if [ $# -ge 1 ]; then
     [ "$text" == "" ] && text=$(cat /dev/stdin)
 fi
 
-readDotenv $dotenv
+initConfig
+readDotenv "$dotenv"
 verification
 
 case $usedEngine in

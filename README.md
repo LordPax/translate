@@ -1,14 +1,36 @@
 # Translate
+
 ## Description
+
 Translate text with deepl
 
-## Evailable engine
-* [deepl](https://www.deepl.com)
-* [libre](https://github.com/LibreTranslate/LibreTranslate)
+## Required Dependencies
 
-## Dotenv
-Create a .env file
+-   `jq`
+
+## Evailable engine
+
+-   [deepl](https://www.deepl.com)
+-   [libre](https://github.com/LibreTranslate/LibreTranslate)
+
+## Installation
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/LordPax/translate.git
+cd translate
 ```
+
+2. Execute the script to generate config file in `.config/translate`
+
+```bash
+./cligpt
+```
+
+3. Create dotenv file `~/.config/translate/.env` with
+
+```bash
 DEEPL_ROUTE=https://api-free.deepl.com/v2/translate
 DEEPL_KEY=mandatory if you use deepl
 LIBRE_ROUTE_DETECT=localhost:5000/detect
@@ -17,6 +39,7 @@ LIBRE_KEY=not mandatory if route is on localhost
 ```
 
 ## Usage
+
 ```
 Usage : translate <option> [text]
 
