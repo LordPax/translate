@@ -25,7 +25,7 @@ cd translate
 2. Execute the script to generate config file in `.config/translate`
 
 ```bash
-./cligpt
+./translate
 ```
 
 3. Create dotenv file `~/.config/translate/.env` with
