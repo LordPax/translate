@@ -26,12 +26,12 @@ function echo_log() {
 }
 
 function helpFunc() {
-    echo -e $"Usage : $(basename $0) <option> [text]
+    echo -e $"Usage : $(basename "$0") <option> [text]
 
 Option :
 -h or --help ........................... Show help
 -v or --version ........................ Show version
--e or --engine <engine> ................ Set engine (default : deepl)
+-e or --engine <engine> ................ Set engine (default : $usedEngine)
 -s <lang> .............................. Source language
 -t <lang> .............................. Target language
 
@@ -40,8 +40,8 @@ Engine :
 * libre
 
 Example :
-translate -t fr \"Hello World!\"
-echo \"Hello World!\" | translate -t fr"
+$(basename "$0") -t fr \"Hello World!\"
+echo \"Hello World!\" | $(basename "$0") -t fr"
 
     exit 0
 }
