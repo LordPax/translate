@@ -13,14 +13,14 @@ text=""
 
 # echo_err <msg>
 function echo_err() {
-    [ "$1" == "" ] && exit 1
+    [ -z "$1" ] && exit 1
     echo -e "\e[31mERROR :\e[0m $1" > /dev/stderr
 }
 
 # echo_log <msg>
 # Log message for test purpose
 function echo_log() {
-    [ "$1" == "" ] && exit 1
+    [ -z "$1" ] && exit 1
     local date=$(date "+%Y-%m-%d %H:%M:%S")
     echo -e "[$date] : $1" >> "$logPath"
 }
@@ -47,11 +47,11 @@ echo \"Hello World!\" | translate -t fr"
 }
 
 function verification() {
-    [ "$(which jq 2> /dev/null)" == "" ] && echo_err "\"jq\" is required" && exit 1
-    [ "$DEEPL_ROUTE" == "" ] && echo_err "Deepl route is not defined in dotenv" && exit 1
-    [ "$LIBRE_ROUTE" == "" ] && echo_err "Libre Translation route is not defined in dotenv" && exit 1
-    [ "$text" == "" ] && echo_err "Text is needed" && exit 1
-    [ "$targetLang" == "" ] && echo_err "Target language is needed" && exit 1
+    [ -z "$(which jq 2> /dev/null)" ] && echo_err "\"jq\" is required" && exit 1
+    [ -z "$DEEPL_ROUTE" ] && echo_err "Deepl route is not defined in dotenv" && exit 1
+    [ -z "$LIBRE_ROUTE" ] && echo_err "Libre Translation route is not defined in dotenv" && exit 1
+    [ -z "$text" ] && echo_err "Text is needed" && exit 1
+    [ -z "$targetLang" ] && echo_err "Target language is needed" && exit 1
 }
 
 function initConfig() {
@@ -60,7 +60,7 @@ function initConfig() {
 
 # readDotenv <env>
 function readDotenv() {
-    ([ "$1" == "" ] || [ ! -f $1 ]) \
+    ([ -z "$1" ] || [ ! -f $1 ]) \
         && echo_err "Dotenv file not found" && exit 1
 
     local k
@@ -76,7 +76,7 @@ function readDotenv() {
 }
 
 function translateDeepl() {
-    [ "$DEEPL_KEY" == "" ] && echo_err "Deepl api key is not defined in dotenv" && exit 1
+    [ -z "$DEEPL_KEY" ] && echo_err "Deepl api key is not defined in dotenv" && exit 1
     local translated
 
     # source language can be empty
@@ -94,10 +94,10 @@ function translateDeepl() {
 
 function translateLibre() {
     # if key is not found and the route is not on localhost, print error
-    ([ "$LIBRE_KEY" == "" ] && ! echo "$LIBRE_ROUTE" | grep "localhost" &> /dev/null) \
+    ([ -z "$LIBRE_KEY" ] && ! echo "$LIBRE_ROUTE" | grep "localhost" &> /dev/null) \
         && echo_err "Libre Translate api key is not defined in dotenv" && exit 1
 
-    if [ "$sourceLang" == "" ]; then
+    if [ -z "$sourceLang" ]; then
         local detected=$(curl -s \
             -X POST "$LIBRE_ROUTE_DETECT" \
             -H "accept: application/json" \
@@ -151,7 +151,7 @@ if [ $# -ge 1 ]; then
         esac
         shift
     done
-    [ "$text" == "" ] && text=$(cat /dev/stdin)
+    [ -z "$text" ] && text=$(cat /dev/stdin)
 fi
 
 initConfig
