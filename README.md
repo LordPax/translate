@@ -8,7 +8,7 @@ Translate text with deepl
 
 -   `jq`
 
-## Evailable engine
+## Available engine
 
 -   [deepl](https://www.deepl.com)
 -   [libre](https://github.com/LibreTranslate/LibreTranslate)
