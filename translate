@@ -1,15 +1,16 @@
 #!/bin/bash
 # author : lordpax
-# backup v0.2.0
+# backup v0.2.1
 
-version="v0.2.0"
+version="v0.2.1"
 config="${HOME}/.config/translate"
-dotenv="${config}/.env"
+dotenv="${config}/config"
 logPath="${config}/log"
-usedEngine="deepl"
+usedEngine=""
 sourceLang=""
 targetLang=""
 text=""
+dependencies="curl jq"
 
 # echo_err <msg>
 function echo_err() {
@@ -18,7 +19,6 @@ function echo_err() {
 }
 
 # echo_log <msg>
-# Log message for test purpose
 function echo_log() {
     [ -z "$1" ] && exit 1
     local date=$(date "+%Y-%m-%d %H:%M:%S")
@@ -46,33 +46,48 @@ echo \"Hello World!\" | $(basename "$0") -t fr"
     exit 0
 }
 
+function checkDependencies() {
+    for dependency in $dependencies; do
+        ! command -v "$dependency" > /dev/null 2>&1 && \
+            echo_err "Dependency \"$dependency\" not found" && exit 1
+    done
+}
+
 function verification() {
-    [ -z "$(which jq 2> /dev/null)" ] && echo_err "\"jq\" is required" && exit 1
+    [ -z "$USED_ENGINE" ] && echo_err "Engine must be defined" && exit 1
+    [ -z "$usedEngine" ] && usedEngine="$USED_ENGINE"
     [ -z "$DEEPL_ROUTE" ] && echo_err "Deepl route is not defined in dotenv" && exit 1
     [ -z "$LIBRE_ROUTE" ] && echo_err "Libre Translation route is not defined in dotenv" && exit 1
     [ -z "$text" ] && echo_err "Text is needed" && exit 1
     [ -z "$targetLang" ] && echo_err "Target language is needed" && exit 1
 }
 
-function initConfig() {
-    [ ! -d "$config" ] && mkdir "$config" && echo "Config are generated"
+function writeConfig() {
+    echo "USED_ENGINE=deepl"
+    echo "DEEPL_ROUTE=https://api-free.deepl.com/v2/translate"
+    echo "DEEPL_KEY="
+    echo "LIBRE_ROUTE_DETECT=localhost:5000/detect"
+    echo "LIBRE_ROUTE=localhost:5000/translate"
+    echo "LIBRE_KEY=not mandatory if route is on localhost"
 }
 
-# readDotenv <env>
+function initConfig() {
+    [ ! -d "$config" ] && mkdir "$config" && echo "Config are generated"
+    [ ! -f "$dotenv" ] && writeConfig > "$dotenv" && echo "Dotenv file is generated"
+}
+
 function readDotenv() {
-    ([ -z "$1" ] || [ ! -f $1 ]) \
-        && echo_err "Dotenv file not found" && exit 1
+    [ ! -f "$dotenv" ] && echo_err "readDotenv : Dotenv file not found" && exit 1
 
     local k
     local v
 
     while read -r var; do
-        if [ ! "${var:0:1}" = "#" ]; then
-            k=${var%=*}
-            v=${var#*=}
-            [ -n "$k" ] && export "$k"="$v"
-        fi
-    done < "$1"
+        [ "${var:0:1}" = "#" ] && continue
+        k=${var%=*}
+        v=${var#*=}
+        [ -n "$k" ] && export "$k=$v"
+    done < "$dotenv"
 }
 
 function translateDeepl() {
@@ -124,48 +139,53 @@ function translateEngine() {
     echo "example engine"
 }
 
-if [ $# -ge 1 ]; then
-    for i in $(seq 1 $#); do
-        case $1 in
-            -h | --help)
-                helpFunc;;
-            -v | --version)
-                echo $version
-                exit 0;;
-            -e | --engine)
-                usedEngine=$2
-                shift;;
-            -s)
-                sourceLang=$2
-                shift;;
-            -t)
-                targetLang=$2
-                shift;;
-            "") ;;
-            -*)
-                echo_err $"Unknown parameter \"$1\""
-                exit 1;;
-            *)
-                text=$1
-                shift
-        esac
-        shift
-    done
-    [ -z "$text" ] && text=$(cat /dev/stdin)
-fi
+function main () {
+    if [ $# -ge 1 ]; then
+        for _ in $(seq 1 $#); do
+            case $1 in
+                -h | --help)
+                    helpFunc;;
+                -v | --version)
+                    echo $version
+                    exit 0;;
+                -e | --engine)
+                    usedEngine=$2
+                    shift;;
+                -s)
+                    sourceLang=$2
+                    shift;;
+                -t)
+                    targetLang=$2
+                    shift;;
+                "") ;;
+                -*)
+                    echo_err $"Unknown parameter \"$1\""
+                    exit 1;;
+                *)
+                    text=$1
+                    shift
+            esac
+            shift
+        done
+        [ -z "$text" ] && text=$(cat /dev/stdin)
+    fi
 
+    verification
+
+    case $usedEngine in
+        deepl)
+            translateDeepl;;
+        libre)
+            translateLibre;;
+        example)
+            translateEngine;;
+        *)
+            echo_err "Engine \"$usedEngine\" not found"
+            exit 1;;
+    esac
+}
+
+checkDependencies
 initConfig
-readDotenv "$dotenv"
-verification
-
-case $usedEngine in
-    deepl)
-        translateDeepl;;
-    libre)
-        translateLibre;;
-    exampleengine)
-        translateEngine;;
-    *)
-        echo_err "Engine \"$usedEngine\" not found"
-        exit 1;;
-esac
+readDotenv
+main "$@"

@@ -7,11 +7,13 @@ Translate text with deepl
 ## Required Dependencies
 
 -   `jq`
+-   `curl`
 
 ## Available engine
 
 -   [deepl](https://www.deepl.com)
 -   [libre](https://github.com/LibreTranslate/LibreTranslate)
+-   [google](https://cloud.google.com/translate) (not implemented yet)
 
 ## Installation
 
@@ -28,9 +30,10 @@ cd translate
 ./translate
 ```
 
-3. Create dotenv file `~/.config/translate/.env` with
+3. Create dotenv file `~/.config/translate/config` with your needed information like api key
 
 ```bash
+USED_ENGINE=deepl
 DEEPL_ROUTE=https://api-free.deepl.com/v2/translate
 DEEPL_KEY=mandatory if you use deepl
 LIBRE_ROUTE_DETECT=localhost:5000/detect
