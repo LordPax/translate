@@ -6,7 +6,6 @@ version="v0.2.1"
 config="${HOME}/.config/translate"
 dotenv="${config}/config"
 logPath="${config}/log"
-usedEngine=""
 sourceLang=""
 targetLang=""
 text=""
@@ -15,7 +14,7 @@ dependencies="curl jq"
 # echo_err <msg>
 function echo_err() {
     [ -z "$1" ] && exit 1
-    echo -e "\e[31mERROR :\e[0m $1" > /dev/stderr
+    echo -e "ERROR : $1" > /dev/stderr
 }
 
 # echo_log <msg>
@@ -31,7 +30,7 @@ function helpFunc() {
 Option :
 -h or --help ........................... Show help
 -v or --version ........................ Show version
--e or --engine <engine> ................ Set engine (default : $usedEngine)
+-e or --engine <engine> ................ Set engine (default : $USED_ENGINE)
 -s <lang> .............................. Source language
 -t <lang> .............................. Target language
 
@@ -55,7 +54,6 @@ function checkDependencies() {
 
 function verification() {
     [ -z "$USED_ENGINE" ] && echo_err "Engine must be defined" && exit 1
-    [ -z "$usedEngine" ] && usedEngine="$USED_ENGINE"
     [ -z "$DEEPL_ROUTE" ] && echo_err "Deepl route is not defined in dotenv" && exit 1
     [ -z "$LIBRE_ROUTE" ] && echo_err "Libre Translation route is not defined in dotenv" && exit 1
     [ -z "$text" ] && echo_err "Text is needed" && exit 1
@@ -92,10 +90,9 @@ function readDotenv() {
 
 function translateDeepl() {
     [ -z "$DEEPL_KEY" ] && echo_err "Deepl api key is not defined in dotenv" && exit 1
-    local translated
 
     # source language can be empty
-    translated=$(curl -s \
+    local translated=$(curl -s \
         -X POST "$DEEPL_ROUTE" \
         -H "Authorization: DeepL-Auth-Key $DEEPL_KEY" \
         -d "text=$text" \
@@ -149,7 +146,7 @@ function main () {
                     echo $version
                     exit 0;;
                 -e | --engine)
-                    usedEngine=$2
+                    USED_ENGINE=$2
                     shift;;
                 -s)
                     sourceLang=$2
@@ -172,7 +169,7 @@ function main () {
 
     verification
 
-    case $usedEngine in
+    case $USED_ENGINE in
         deepl)
             translateDeepl;;
         libre)
@@ -180,7 +177,7 @@ function main () {
         example)
             translateEngine;;
         *)
-            echo_err "Engine \"$usedEngine\" not found"
+            echo_err "Engine \"$USED_ENGINE\" not found"
             exit 1;;
     esac
 }
